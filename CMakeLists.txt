@@ -27,10 +27,13 @@ SET(CMAKE_CXX_STANDARD 17)
 PROJECT(rtthread C CXX ASM)
 
 INCLUDE_DIRECTORIES(
+	packages/aht10-latest/inc
 	applications
 	rt-thread/components/libc/compilers/common/include
 	rt-thread/components/libc/compilers/newlib
 	rt-thread/components/drivers/include
+	rt-thread/components/drivers/spi
+	rt-thread/components/drivers/wlan
 	board
 	board/CubeMX_Config/Inc
 	board/ports
@@ -45,10 +48,21 @@ INCLUDE_DIRECTORIES(
 	rt-thread/libcpu/arm/cortex-m4
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Inc
 	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Include
+	rt-thread/components/net/lwip/lwip-2.0.3/src/include
+	rt-thread/components/net/lwip/lwip-2.0.3/src/include/ipv4
+	rt-thread/components/net/lwip/lwip-2.0.3/src/include/netif
+	rt-thread/components/net/lwip/port
 	rt-thread/components/libc/posix/io/epoll
 	rt-thread/components/libc/posix/io/eventfd
 	rt-thread/components/libc/posix/io/poll
 	rt-thread/components/libc/posix/ipc
+	packages/rw007-v2.1.0
+	packages/rw007-v2.1.0/inc
+	rt-thread/components/net/netdev/include
+	rt-thread/components/net/sal/include
+	rt-thread/components/net/sal/include/socket
+	rt-thread/components/net/sal/impl
+	rt-thread/components/net/sal/include/socket/sys_socket
 )
 
 ADD_DEFINITIONS(
@@ -61,7 +75,10 @@ ADD_DEFINITIONS(
 )
 
 SET(PROJECT_SOURCES
+	packages/aht10-latest/src/aht10.c
+	applications/usart3.c
 	applications/main.c
+	applications/wifi_connection.c
 	rt-thread/components/libc/compilers/common/cctype.c
 	rt-thread/components/libc/compilers/common/cstdlib.c
 	rt-thread/components/libc/compilers/common/cstring.c
@@ -85,9 +102,20 @@ SET(PROJECT_SOURCES
 	rt-thread/components/drivers/misc/rt_drv_pwm.c
 	rt-thread/components/drivers/pin/pin.c
 	rt-thread/components/drivers/serial/serial.c
+	rt-thread/components/drivers/spi/spi_core.c
+	rt-thread/components/drivers/spi/spi_dev.c
+	rt-thread/components/drivers/wlan/wlan_cfg.c
+	rt-thread/components/drivers/wlan/wlan_cmd.c
+	rt-thread/components/drivers/wlan/wlan_dev.c
+	rt-thread/components/drivers/wlan/wlan_lwip.c
+	rt-thread/components/drivers/wlan/wlan_mgnt.c
+	rt-thread/components/drivers/wlan/wlan_prot.c
+	rt-thread/components/drivers/wlan/wlan_workqueue.c
 	board/CubeMX_Config/Src/stm32f4xx_hal_msp.c
 	board/board.c
 	libraries/HAL_Drivers/drivers/drv_gpio.c
+	libraries/HAL_Drivers/drivers/drv_soft_i2c.c
+	libraries/HAL_Drivers/drivers/drv_spi.c
 	libraries/HAL_Drivers/drivers/drv_usart.c
 	libraries/HAL_Drivers/drv_common.c
 	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s
@@ -116,28 +144,74 @@ SET(PROJECT_SOURCES
 	rt-thread/libcpu/arm/common/showmem.c
 	rt-thread/libcpu/arm/cortex-m4/context_gcc.S
 	rt-thread/libcpu/arm/cortex-m4/cpuport.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_lptim.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.c
-	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_lptim.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
+	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/api_lib.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/api_msg.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/err.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/netbuf.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/netdb.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/netifapi.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/sockets.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/api/tcpip.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/apps/ping/ping.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/def.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/dns.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/inet_chksum.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/init.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ip.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/autoip.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/dhcp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/etharp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/icmp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/igmp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/ip4.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/ip4_addr.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/ipv4/ip4_frag.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/memp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/netif.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/pbuf.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/raw.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/stats.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/sys.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/tcp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/tcp_in.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/tcp_out.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/timeouts.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/core/udp.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/netif/ethernet.c
+	rt-thread/components/net/lwip/lwip-2.0.3/src/netif/lowpan6.c
+	rt-thread/components/net/lwip/port/ethernetif.c
+	rt-thread/components/net/lwip/port/sys_arch.c
+	packages/rw007-v2.1.0/example/rw007_stm32_port.c
+	packages/rw007-v2.1.0/src/spi_wifi_rw007.c
+	rt-thread/components/net/netdev/src/netdev.c
+	rt-thread/components/net/netdev/src/netdev_ipaddr.c
+	rt-thread/components/net/sal/impl/af_inet_lwip.c
+	rt-thread/components/net/sal/socket/net_netdb.c
+	rt-thread/components/net/sal/src/sal_socket.c
 )
 
 LINK_DIRECTORIES(
