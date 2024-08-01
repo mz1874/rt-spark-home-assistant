@@ -28,7 +28,7 @@ static void serial_thread_entry(void *parameter)
         }
 
         /* 打印接收到的字节 */
-        rt_kprintf("Received: %c\n", ch);
+        rt_kprintf("Received: %x\n", ch);
 
         /* 读取到的数据通过串口错位输出 */
         ch = ch + 1;
