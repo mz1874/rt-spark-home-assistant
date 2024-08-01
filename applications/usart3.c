@@ -7,22 +7,18 @@ static struct rt_semaphore rx_sem;
 static rt_device_t serial;
 
 /* 接收数据回调函数 */
-static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
-{
+static rt_err_t uart_input(rt_device_t dev, rt_size_t size) {
     rt_sem_release(&rx_sem);
 
     return RT_EOK;
 }
 
-static void serial_thread_entry(void *parameter)
-{
+static void serial_thread_entry(void *parameter) {
     char ch;
 
-    while (1)
-    {
+    while (1) {
         /* 从串口读取一个字节的数据，没有读取到则等待接收信号量 */
-        while (rt_device_read(serial, -1, &ch, 1) != 1)
-        {
+        while (rt_device_read(serial, -1, &ch, 1) != 1) {
             /* 阻塞等待接收信号量，等到信号量后再次读取数据 */
             rt_sem_take(&rx_sem, RT_WAITING_FOREVER);
         }
@@ -35,17 +31,15 @@ static void serial_thread_entry(void *parameter)
         rt_device_write(serial, 0, &ch, 1);
     }
 }
-int uart3_entry_point()
-{
+
+int uart3_entry_point() {
     rt_err_t ret = RT_EOK;
     char uart_name[8] = SAMPLE_UART_NAME;
-    char str[] = "hello RT-Thread!\r\n";
 
     /* 查找系统中的串口设备 */
     serial = rt_device_find(uart_name);
 
-    if (!serial)
-    {
+    if (!serial) {
         rt_kprintf("find %s failed!\n", uart_name);
         return RT_ERROR;
     }
@@ -59,17 +53,12 @@ int uart3_entry_point()
     /* 设置接收回调函数 */
     rt_device_set_rx_indicate(serial, uart_input);
     /* 发送字符串 */
-    rt_device_write(serial, 0, str, (sizeof(str) - 1));
-
     /* 创建 serial 线程 */
     rt_thread_t thread = rt_thread_create("serial", serial_thread_entry, RT_NULL, 1024, 25, 10);
     /* 创建成功则启动线程 */
-    if (thread != RT_NULL)
-    {
+    if (thread != RT_NULL) {
         rt_thread_startup(thread);
-    }
-    else
-    {
+    } else {
         ret = RT_ERROR;
     }
 

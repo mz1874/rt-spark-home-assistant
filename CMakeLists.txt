@@ -42,6 +42,12 @@ INCLUDE_DIRECTORIES(
 	libraries/HAL_Drivers
 	libraries/HAL_Drivers/CMSIS/Include
 	rt-thread/components/finsh
+	packages/kawaii-mqtt-latest/common
+	packages/kawaii-mqtt-latest/mqtt
+	packages/kawaii-mqtt-latest/mqttclient
+	packages/kawaii-mqtt-latest/network
+	packages/kawaii-mqtt-latest/platform/RT-Thread
+	packages/kawaii-mqtt-latest/common/log
 	.
 	rt-thread/include
 	rt-thread/libcpu/arm/common
@@ -76,9 +82,10 @@ ADD_DEFINITIONS(
 
 SET(PROJECT_SOURCES
 	packages/aht10-latest/src/aht10.c
-	applications/usart3.c
-	applications/main.c
 	applications/wifi_connection.c
+	applications/test.c
+	applications/main.c
+	applications/usart3.c
 	rt-thread/components/libc/compilers/common/cctype.c
 	rt-thread/components/libc/compilers/common/cstdlib.c
 	rt-thread/components/libc/compilers/common/cstring.c
@@ -119,10 +126,35 @@ SET(PROJECT_SOURCES
 	libraries/HAL_Drivers/drivers/drv_usart.c
 	libraries/HAL_Drivers/drv_common.c
 	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s
-	rt-thread/components/finsh/msh.c
-	rt-thread/components/finsh/msh_parse.c
-	rt-thread/components/finsh/shell.c
 	rt-thread/components/finsh/cmd.c
+	rt-thread/components/finsh/msh_parse.c
+	rt-thread/components/finsh/msh.c
+	rt-thread/components/finsh/shell.c
+	packages/kawaii-mqtt-latest/platform/RT-Thread/platform_thread.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTConnectClient.c
+	packages/kawaii-mqtt-latest/common/log/salof.c
+	packages/kawaii-mqtt-latest/common/log/fifo.c
+	packages/kawaii-mqtt-latest/common/log/arch/rt-thread/arch.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTUnsubscribeServer.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTFormat.c
+        packages/kawaii-mqtt-latest/mqtt/MQTTConnectServer.c
+	packages/kawaii-mqtt-latest/network/network.c
+        packages/kawaii-mqtt-latest/mqtt/MQTTSerializePublish.c
+	packages/kawaii-mqtt-latest/platform/RT-Thread/platform_net_socket.c
+	packages/kawaii-mqtt-latest/platform/RT-Thread/platform_mutex.c
+	packages/kawaii-mqtt-latest/mqttclient/mqttclient.c
+	packages/kawaii-mqtt-latest/platform/RT-Thread/platform_timer.c
+	packages/kawaii-mqtt-latest/network/nettype_tcp.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTSubscribeServer.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTPacket.c
+	packages/kawaii-mqtt-latest/network/nettype_tls.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTDeserializePublish.c
+	packages/kawaii-mqtt-latest/common/random.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTSubscribeClient.c
+	packages/kawaii-mqtt-latest/common/mqtt_list.c
+	packages/kawaii-mqtt-latest/platform/RT-Thread/platform_memory.c
+	packages/kawaii-mqtt-latest/common/log/format.c
+	packages/kawaii-mqtt-latest/mqtt/MQTTUnsubscribeClient.c
 	rt-thread/src/clock.c
 	rt-thread/src/components.c
 	rt-thread/src/cpu_up.c
@@ -144,30 +176,30 @@ SET(PROJECT_SOURCES
 	rt-thread/libcpu/arm/common/showmem.c
 	rt-thread/libcpu/arm/cortex-m4/context_gcc.S
 	rt-thread/libcpu/arm/cortex-m4/cpuport.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_lptim.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
-	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
-	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c
 	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_lptim.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+	libraries/STM32F4xx_HAL/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
+	libraries/STM32F4xx_HAL/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.c
 	rt-thread/components/net/lwip/lwip-2.0.3/src/api/api_lib.c
 	rt-thread/components/net/lwip/lwip-2.0.3/src/api/api_msg.c
 	rt-thread/components/net/lwip/lwip-2.0.3/src/api/err.c
@@ -205,8 +237,8 @@ SET(PROJECT_SOURCES
 	rt-thread/components/net/lwip/lwip-2.0.3/src/netif/lowpan6.c
 	rt-thread/components/net/lwip/port/ethernetif.c
 	rt-thread/components/net/lwip/port/sys_arch.c
-	packages/rw007-v2.1.0/example/rw007_stm32_port.c
 	packages/rw007-v2.1.0/src/spi_wifi_rw007.c
+	packages/rw007-v2.1.0/example/rw007_stm32_port.c
 	rt-thread/components/net/netdev/src/netdev.c
 	rt-thread/components/net/netdev/src/netdev_ipaddr.c
 	rt-thread/components/net/sal/impl/af_inet_lwip.c
