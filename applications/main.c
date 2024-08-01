@@ -16,14 +16,15 @@
 #include "stdio.h"
 #include <rtdevice.h>
 #include "usart3.h"
+#include "mqtt_client.h"
 #define GPIO_LED_B    GET_PIN(F, 11)
 #define GPIO_LED_R    GET_PIN(F, 12)
 
 int main(void)
 {
     wifi_connection(NULL);
-    rt_pin_mode(GPIO_LED_R, PIN_MODE_OUTPUT);
     //启动串口3线程
     uart3_entry_point();
+    ka_mqtt();
     return 0;
 }

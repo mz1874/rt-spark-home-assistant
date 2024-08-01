@@ -4,6 +4,7 @@
 #include <rtdevice.h>
 #include <board.h>
 #include "mqttclient.h"
+#include <msh.h>
 
 #ifndef KAWAII_MQTT_HOST
 #define KAWAII_MQTT_HOST               "jiejie01.top"
@@ -40,6 +41,15 @@ static void sub_topic_handle1(void* client, message_data_t* msg)
 }
 
 
+static void sub_topic_handle2(void* client, message_data_t* msg)
+{
+    (void) client;
+    KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
+    KAWAII_MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, (char*)msg->message->payload);
+    KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
+}
+
+
 static int mqtt_publish_handle1(mqtt_client_t *client)
 {
     mqtt_message_t msg;
@@ -68,13 +78,24 @@ static void kawaii_mqtt_demo(void *parameter)
     mqtt_set_client_id(client, KAWAII_MQTT_CLIENTID);
     mqtt_set_clean_session(client, 1);
 
-    KAWAII_MQTT_LOG_I("The ID of the Kawaii client is: %s ", KAWAII_MQTT_CLIENTID);
+    KAWAII_MQTT_LOG_I("The ID of the Kawaii client is: %s \r\n", KAWAII_MQTT_CLIENTID);
 
-    mqtt_connect(client);
-
+    int index = mqtt_connect(client);
+    if(index == KAWAII_MQTT_CONNECT_FAILED_ERROR)
+    {
+        //尝试重连一次
+        rt_kprintf("connection failed ! re-connecting.....\r\n");
+        index = mqtt_connect(client);
+        if(index == KAWAII_MQTT_CONNECT_FAILED_ERROR) {
+            char command [] = "reboot";
+            rt_kprintf("connection failed ! rebooting.....\r\n");
+            msh_exec(command, rt_strlen(command));
+        }
+    }
     rt_sem_release(sem_mqtt_connection);
     mqtt_subscribe(client, KAWAII_MQTT_SUBTOPIC, QOS0, sub_topic_handle1);
-    
+    mqtt_subscribe(client, "home/bedroom/switch1/set", QOS0, sub_topic_handle2);
+
     while (1) {
         mqtt_publish_handle1(client);
                                
