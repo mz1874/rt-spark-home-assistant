@@ -121,7 +121,7 @@ void AHT_Init(const char *name) {
 //AHT设备测试线程
 void AHT_test_entry(void *args) {
     float humidity, temperature;
-    char payload[PACKAGE_size];
+    char payload[PACKAGE_SIZE];
     AHT_Init(AHT_I2C_BUS_NAME);     //进行设备初始化
     while (1) {
         read_temp_humi(&temperature, &humidity);    //读取数据

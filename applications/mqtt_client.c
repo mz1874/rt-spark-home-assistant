@@ -33,6 +33,7 @@ mqtt_client_t *client = NULL;
 rt_sem_t sem_mqtt_connection = RT_NULL;
 
 extern rt_mq_t mq;
+extern rt_mq_t lux_mq;
 
 static void sub_topic_handle1(void *client, message_data_t *msg) {
     (void) client;
@@ -103,7 +104,7 @@ static void kawaii_mqtt_demo(void *parameter) {
 }
 
 static void publish2(void *parameter) {
-    char payload[PACKAGE_size]; // Buffer to hold the string representation of the receive value
+    char payload[PACKAGE_SIZE]; // Buffer to hold the string representation of the receive value
     while (1) {
         if (rt_mq_recv(mq, &payload, sizeof(payload), 1000) > 0) {
             mqtt_message_t msg;
@@ -119,8 +120,25 @@ static void publish2(void *parameter) {
     }
 }
 
+
+static void publish3(void *parameter) {
+    char payload[LUX_PACKAGE_SIZE]; // Buffer to hold the string representation of the receive value
+    while (1) {
+        if (rt_mq_recv(lux_mq, &payload, sizeof(payload), 1000) > 0) {
+            mqtt_message_t msg;
+            memset(&msg, 0, sizeof(msg));
+            msg.qos = QOS1;
+            // msg.payload 直接指向接收到的 payload
+            msg.payload = (void *) payload;
+
+            mqtt_publish(client, "hah", &msg);
+        }
+        rt_thread_delay(1000);
+    }
+}
+
 int ka_mqtt(void) {
-    rt_thread_t tid_mqtt, second_publish;
+    rt_thread_t tid_mqtt, second_publish, lux_publish;
     sem_mqtt_connection = rt_sem_create("mqtt_connection", 1, RT_IPC_FLAG_FIFO);
     rt_sem_take(sem_mqtt_connection, RT_WAITING_FOREVER);
     tid_mqtt = rt_thread_create("kawaii_demo", kawaii_mqtt_demo, RT_NULL, 2048, 17, 10);
@@ -135,7 +153,11 @@ int ka_mqtt(void) {
     }
     rt_thread_startup(second_publish);
     rt_sem_release(sem_mqtt_connection);
-
+    lux_publish = rt_thread_create("lux_publish", publish3, RT_NULL, 2048, 17, 10);
+    if (lux_publish == RT_NULL) {
+        return -RT_ERROR;
+    }
+    rt_thread_startup(lux_publish);
     return RT_EOK;
 }
 

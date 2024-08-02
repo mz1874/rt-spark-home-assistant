@@ -266,7 +266,8 @@
 #define KAWAII_MQTT_SUBTOPIC "rtt-sub"
 #define KAWAII_MQTT_PUBTOPIC "rtt-pub"
 #define PKG_USING_KAWAII_MQTT_LATEST_VERSION
-#define PACKAGE_size 38
+#define PACKAGE_SIZE 37
+#define LUX_PACKAGE_SIZE 31
 /* Wi-Fi */
 
 /* Marvell WiFi */
@@ -375,6 +376,8 @@
 
 #define PKG_USING_AHT10
 #define PKG_USING_AHT10_LATEST_VERSION
+#define PKG_USING_AP3216C
+#define PKG_USING_AP3216C_LATEST_VERSION
 /* end of sensors drivers */
 
 /* touch drivers */
@@ -461,6 +464,7 @@
 #define BSP_USING_COM3
 #define BSP_USING_RW007_WLAN
 #define BSP_USING_AHT21
+#define BSP_USING_AP3216C
 /* end of Onboard Peripheral Drivers */
 
 /* On-chip Peripheral Drivers */
@@ -472,6 +476,9 @@
 #define BSP_USING_SPI
 #define BSP_USING_SPI2
 #define BSP_USING_I2C
+#define BSP_USING_I2C2
+#define BSP_I2C2_SCL_PIN 81
+#define BSP_I2C2_SDA_PIN 80
 #define BSP_USING_I2C3
 #define BSP_I2C3_SCL_PIN 64
 #define BSP_I2C3_SDA_PIN 65
