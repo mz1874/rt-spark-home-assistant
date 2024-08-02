@@ -267,7 +267,7 @@
 #define KAWAII_MQTT_PUBTOPIC "rtt-pub"
 #define PKG_USING_KAWAII_MQTT_LATEST_VERSION
 #define PACKAGE_SIZE 37
-#define LUX_PACKAGE_SIZE 31
+#define LUX_PACKAGE_SIZE 34
 /* Wi-Fi */
 
 /* Marvell WiFi */

@@ -121,7 +121,7 @@ static void temperature_humidity_publish(void *parameter) {
 }
 
 
-static void lux_publish(void *parameter) {
+static void lux_publish_task(void *parameter) {
     char payload[LUX_PACKAGE_SIZE]; // Buffer to hold the string representation of the receive value
     while (1) {
         if (rt_mq_recv(lux_mq, &payload, sizeof(payload), 1000) > 0) {
@@ -153,7 +153,7 @@ int ka_mqtt(void) {
     }
     rt_thread_startup(second_publish);
     rt_sem_release(sem_mqtt_connection);
-    lux_publish = rt_thread_create("lux_publish_task", lux_publish, RT_NULL, 2048, 17, 10);
+    lux_publish = rt_thread_create("lux_publish_task", lux_publish_task, RT_NULL, 2048, 17, 10);
     if (lux_publish == RT_NULL) {
         return -RT_ERROR;
     }
