@@ -32,41 +32,41 @@ mqtt_client_t *client = NULL;
 
 rt_sem_t sem_mqtt_connection = RT_NULL;
 
-static void sub_topic_handle1(void* client, message_data_t* msg)
-{
+extern rt_mq_t mq;
+
+static void sub_topic_handle1(void *client, message_data_t *msg) {
     (void) client;
     KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
-    KAWAII_MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, (char*)msg->message->payload);
+    KAWAII_MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name,
+                      (char *) msg->message->payload);
     KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
 }
 
 
-static void sub_topic_handle2(void* client, message_data_t* msg)
-{
+static void sub_topic_handle2(void *client, message_data_t *msg) {
     (void) client;
     KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
-    KAWAII_MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, (char*)msg->message->payload);
+    KAWAII_MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name,
+                      (char *) msg->message->payload);
     KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
 }
 
 
-static int mqtt_publish_handle1(mqtt_client_t *client)
-{
+static int mqtt_publish_handle1(mqtt_client_t *client) {
     mqtt_message_t msg;
     memset(&msg, 0, sizeof(msg));
 
     msg.qos = QOS0;
-    msg.payload = (void *)"this is a kawaii mqtt test ...";
+    msg.payload = (void *) "this is a kawaii mqtt test ...";
 
     return mqtt_publish(client, KAWAII_MQTT_PUBTOPIC, &msg);
 }
 
-static void kawaii_mqtt_demo(void *parameter)
-{
+static void kawaii_mqtt_demo(void *parameter) {
     client = NULL;
-    
+
     rt_thread_delay(6000);
-    
+
     mqtt_log_init();
 
     client = mqtt_lease();
@@ -81,13 +81,12 @@ static void kawaii_mqtt_demo(void *parameter)
     KAWAII_MQTT_LOG_I("The ID of the Kawaii client is: %s \r\n", KAWAII_MQTT_CLIENTID);
 
     int index = mqtt_connect(client);
-    if(index == KAWAII_MQTT_CONNECT_FAILED_ERROR)
-    {
+    if (index == KAWAII_MQTT_CONNECT_FAILED_ERROR) {
         //尝试重连一次
         rt_kprintf("connection failed ! re-connecting.....\r\n");
         index = mqtt_connect(client);
-        if(index == KAWAII_MQTT_CONNECT_FAILED_ERROR) {
-            char command [] = "reboot";
+        if (index == KAWAII_MQTT_CONNECT_FAILED_ERROR) {
+            char command[] = "reboot";
             rt_kprintf("connection failed ! rebooting.....\r\n");
             msh_exec(command, rt_strlen(command));
         }
@@ -98,40 +97,38 @@ static void kawaii_mqtt_demo(void *parameter)
 
     while (1) {
         mqtt_publish_handle1(client);
-                               
+
         mqtt_sleep_ms(4 * 1000);
     }
 }
-
-
-static int mqtt_publish_handle2(mqtt_client_t *client)
-{
-    mqtt_message_t msg;
-    memset(&msg, 0, sizeof(msg));
-    msg.qos = QOS0;
-    msg.payload = (void *)"this is a kawaii mqtt test ...";
-    return mqtt_publish(client, "/aht10/test", &msg);
-}
-
 
 static void publish2(void *parameter) {
+    char payload[PACKAGE_size]; // Buffer to hold the string representation of the receive value
     while (1) {
-        mqtt_publish_handle2(client);
-        mqtt_sleep_ms(4 * 1000);
+        if (rt_mq_recv(mq, &payload, sizeof(payload), 1000) > 0) {
+            mqtt_message_t msg;
+            memset(&msg, 0, sizeof(msg));
+            msg.qos = QOS1;
+            // msg.payload 直接指向接收到的 payload
+            msg.payload = (void *) payload;
+
+            mqtt_publish(client, "office/sensor1", &msg);
+        }
+        rt_thread_delay(1000);
+
     }
 }
 
-int ka_mqtt(void)
-{
+int ka_mqtt(void) {
     rt_thread_t tid_mqtt, second_publish;
     sem_mqtt_connection = rt_sem_create("mqtt_connection", 1, RT_IPC_FLAG_FIFO);
-    rt_sem_take(sem_mqtt_connection,RT_WAITING_FOREVER);
+    rt_sem_take(sem_mqtt_connection, RT_WAITING_FOREVER);
     tid_mqtt = rt_thread_create("kawaii_demo", kawaii_mqtt_demo, RT_NULL, 2048, 17, 10);
     if (tid_mqtt == RT_NULL) {
         return -RT_ERROR;
     }
     rt_thread_startup(tid_mqtt);
-    rt_sem_take(sem_mqtt_connection,RT_WAITING_FOREVER);
+    rt_sem_take(sem_mqtt_connection, RT_WAITING_FOREVER);
     second_publish = rt_thread_create("second_publish", publish2, RT_NULL, 2048, 17, 10);
     if (second_publish == RT_NULL) {
         return -RT_ERROR;

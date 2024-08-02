@@ -9,22 +9,25 @@
  * 2023-12-03     Meco Man     support nano version
  */
 
-#include <board.h>
 #include <rtthread.h>
-#include <drv_gpio.h>
 #include "wifi_connection.h"
 #include "stdio.h"
-#include <rtdevice.h>
 #include "usart3.h"
 #include "mqtt_client.h"
-#define GPIO_LED_B    GET_PIN(F, 11)
-#define GPIO_LED_R    GET_PIN(F, 12)
+#include "aht_10.h"
+rt_mq_t mq = RT_NULL;
+
 
 int main(void)
 {
+
+    mq = rt_mq_create("mq", PACKAGE_size,
+                      5, RT_IPC_FLAG_FIFO);
     wifi_connection(NULL);
     //启动串口3线程
     uart3_entry_point();
     ka_mqtt();
+    rt_thread_t thread = rt_thread_create("aht_10", AHT_test_entry, RT_NULL, 2048, 24, 10);
+    rt_thread_startup(thread);
     return 0;
 }
