@@ -63,7 +63,7 @@ static int mqtt_publish_handle1(mqtt_client_t *client) {
     return mqtt_publish(client, KAWAII_MQTT_PUBTOPIC, &msg);
 }
 
-static void kawaii_mqtt_demo(void *parameter) {
+static void mqtt_connection(void *parameter) {
     client = NULL;
 
     rt_thread_delay(6000);
@@ -103,8 +103,8 @@ static void kawaii_mqtt_demo(void *parameter) {
     }
 }
 
-static void publish2(void *parameter) {
-    char payload[PACKAGE_SIZE]; // Buffer to hold the string representation of the receive value
+static void temperature_humidity_publish(void *parameter) {
+    char payload[PACKAGE_SIZE];
     while (1) {
         if (rt_mq_recv(mq, &payload, sizeof(payload), 1000) > 0) {
             mqtt_message_t msg;
@@ -121,7 +121,7 @@ static void publish2(void *parameter) {
 }
 
 
-static void publish3(void *parameter) {
+static void lux_publish(void *parameter) {
     char payload[LUX_PACKAGE_SIZE]; // Buffer to hold the string representation of the receive value
     while (1) {
         if (rt_mq_recv(lux_mq, &payload, sizeof(payload), 1000) > 0) {
@@ -141,19 +141,19 @@ int ka_mqtt(void) {
     rt_thread_t tid_mqtt, second_publish, lux_publish;
     sem_mqtt_connection = rt_sem_create("mqtt_connection", 1, RT_IPC_FLAG_FIFO);
     rt_sem_take(sem_mqtt_connection, RT_WAITING_FOREVER);
-    tid_mqtt = rt_thread_create("kawaii_demo", kawaii_mqtt_demo, RT_NULL, 2048, 17, 10);
+    tid_mqtt = rt_thread_create("mqtt_connection_task", mqtt_connection, RT_NULL, 2048, 17, 10);
     if (tid_mqtt == RT_NULL) {
         return -RT_ERROR;
     }
     rt_thread_startup(tid_mqtt);
     rt_sem_take(sem_mqtt_connection, RT_WAITING_FOREVER);
-    second_publish = rt_thread_create("second_publish", publish2, RT_NULL, 2048, 17, 10);
+    second_publish = rt_thread_create("temp_hum_publish_task", temperature_humidity_publish, RT_NULL, 2048, 17, 10);
     if (second_publish == RT_NULL) {
         return -RT_ERROR;
     }
     rt_thread_startup(second_publish);
     rt_sem_release(sem_mqtt_connection);
-    lux_publish = rt_thread_create("lux_publish", publish3, RT_NULL, 2048, 17, 10);
+    lux_publish = rt_thread_create("lux_publish_task", lux_publish, RT_NULL, 2048, 17, 10);
     if (lux_publish == RT_NULL) {
         return -RT_ERROR;
     }
