@@ -115,8 +115,6 @@ static void temperature_humidity_publish(void *parameter) {
 
             mqtt_publish(client, "office/sensor1", &msg);
         }
-        rt_thread_delay(1000);
-
     }
 }
 
@@ -130,10 +128,8 @@ static void lux_publish_task(void *parameter) {
             msg.qos = QOS1;
             // msg.payload 直接指向接收到的 payload
             msg.payload = (void *) payload;
-
             mqtt_publish(client, "hah", &msg);
         }
-        rt_thread_delay(1000);
     }
 }
 

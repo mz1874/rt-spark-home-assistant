@@ -244,6 +244,24 @@ void led_matrix_fill_test(uint8_t index)
     }
 }
 
+void turn_on_blue_led()
+{
+    led_matrix_fill(LT_BLUE);
+}
+
+void turn_on_red_led()
+{
+    led_matrix_fill(LT_RED);
+}
+
+
+void turn_on_green_led()
+{
+    led_matrix_fill(LT_GREEN);
+}
+
+
+
 void led_matrix_test1()
 {
     rt_memset(RGB_Data, 0x00, sizeof(RGB_Data));
@@ -261,6 +279,9 @@ void led_matrix_test1()
     RGB_Reflash();
 }
 MSH_CMD_EXPORT(led_matrix_test1, Test led matrix on board)
+
+
+MSH_CMD_EXPORT(turn_on_green_led, turn_on_green_led)
 
 void led_matrix_test2()
 {
