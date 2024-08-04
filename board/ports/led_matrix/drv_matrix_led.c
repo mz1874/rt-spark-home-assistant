@@ -26,6 +26,8 @@
 #include <drv_matrix_led.h>
 #include <drv_common.h>
 #include <drv_gpio.h>
+#include <stdio.h>
+#include <string.h>
 
 #ifndef LED_NUM
 #define LED_NUM     19 // LED灯珠个数
@@ -260,6 +262,14 @@ void turn_on_green_led()
     led_matrix_fill(LT_GREEN);
 }
 
+// 定义 turn_on_led 函数
+void turn_on_led(RGBColor_TypeDef Color, char * state) {
+    if (strcmp(state, "ON") == 0) {
+        led_matrix_fill(Color);
+    } else if (strcmp(state, "OFF") == 0) {
+        led_matrix_rst();
+    }
+}
 
 
 void led_matrix_test1()
@@ -279,7 +289,6 @@ void led_matrix_test1()
     RGB_Reflash();
 }
 MSH_CMD_EXPORT(led_matrix_test1, Test led matrix on board)
-
 
 MSH_CMD_EXPORT(turn_on_green_led, turn_on_green_led)
 
@@ -319,8 +328,3 @@ void led_matrix_test3()
 
 MSH_CMD_EXPORT(led_matrix_test3, Test led matrix on board)
 
-void led_matrix_show_color(uint8_t r, uint8_t g, uint8_t b)
-{
-    RGBColor_TypeDef color = {g,r,b};
-    led_matrix_fill(color);
-}

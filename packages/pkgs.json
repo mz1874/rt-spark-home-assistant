@@ -10,6 +10,11 @@
   "ver": "v2.1.0"
  },
  {
+  "name": "CJSON",
+  "path": "/packages/language/JSON/cJSON",
+  "ver": "v1.7.17"
+ },
+ {
   "name": "AHT10",
   "path": "/packages/peripherals/sensors/aht10",
   "ver": "latest"

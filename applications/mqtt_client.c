@@ -5,7 +5,8 @@
 #include <board.h>
 #include "mqttclient.h"
 #include <msh.h>
-
+#include "cJSON.h"
+#include "drv_matrix_led.h"
 #ifndef KAWAII_MQTT_HOST
 #define KAWAII_MQTT_HOST               "jiejie01.top"
 #endif
@@ -34,13 +35,54 @@ rt_sem_t sem_mqtt_connection = RT_NULL;
 
 extern rt_mq_t mq;
 extern rt_mq_t lux_mq;
+extern rt_mq_t rgb_mq;
 
 static void sub_topic_handle1(void *client, message_data_t *msg) {
     (void) client;
-    KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
-    KAWAII_MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name,
-                      (char *) msg->message->payload);
-    KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
+
+    RGBColor_TypeDef rgb;
+    rgb.R = 255;
+    rgb.G = 255;
+    rgb.B = 255;
+
+
+    cJSON *json = cJSON_Parse(msg->message->payload);
+
+    //获取开关状态
+    cJSON *name = cJSON_GetObjectItem(json, "state");
+
+
+
+    // 获取 color 对象
+    cJSON *color = cJSON_GetObjectItem(json, "color");
+    if (color != NULL) {
+        // 获取 r, g, b 属性
+        cJSON *r = cJSON_GetObjectItem(color, "r");
+        cJSON *g = cJSON_GetObjectItem(color, "g");
+        cJSON *b = cJSON_GetObjectItem(color, "b");
+        // 检查 r, g, b 属性是否存在并打印其值
+        if (r != NULL && cJSON_IsNumber(r)) {
+            rgb.R = r->valueint;
+            rt_kprintf("r: %d\n", r->valueint);
+        } else {
+            rt_kprintf("The attribute 'r' does not exist or is not a number.\n");
+        }
+
+        if (g != NULL && cJSON_IsNumber(g)) {
+            rgb.G = g->valueint;
+            rt_kprintf("g: %d\n", g->valueint);
+        } else {
+            rt_kprintf("The attribute 'g' does not exist or is not a number.\n");
+        }
+        if (b != NULL && cJSON_IsNumber(b)) {
+            rgb.B = b->valueint;
+            rt_kprintf("b: %d\n", b->valueint);
+        } else {
+            rt_kprintf("The attribute 'b' does not exist or is not a number.\n");
+        }
+    }
+    cJSON_Delete(json);
+    turn_on_led(rgb,  name->valuestring);
 }
 
 
@@ -52,16 +94,6 @@ static void sub_topic_handle2(void *client, message_data_t *msg) {
     KAWAII_MQTT_LOG_I("-----------------------------------------------------------------------------------");
 }
 
-
-static int mqtt_publish_handle1(mqtt_client_t *client) {
-    mqtt_message_t msg;
-    memset(&msg, 0, sizeof(msg));
-
-    msg.qos = QOS0;
-    msg.payload = (void *) "this is a kawaii mqtt test ...";
-
-    return mqtt_publish(client, KAWAII_MQTT_PUBTOPIC, &msg);
-}
 
 static void mqtt_connection(void *parameter) {
     client = NULL;
@@ -93,14 +125,8 @@ static void mqtt_connection(void *parameter) {
         }
     }
     rt_sem_release(sem_mqtt_connection);
-    mqtt_subscribe(client, KAWAII_MQTT_SUBTOPIC, QOS0, sub_topic_handle1);
+    mqtt_subscribe(client, "home/rgb1/set", QOS0, sub_topic_handle1);
     mqtt_subscribe(client, "home/bedroom/switch1/set", QOS0, sub_topic_handle2);
-
-    while (1) {
-        mqtt_publish_handle1(client);
-
-        mqtt_sleep_ms(4 * 1000);
-    }
 }
 
 static void temperature_humidity_publish(void *parameter) {
@@ -132,6 +158,7 @@ static void lux_publish_task(void *parameter) {
         }
     }
 }
+
 
 int ka_mqtt(void) {
     rt_thread_t tid_mqtt, second_publish, lux_publish;
