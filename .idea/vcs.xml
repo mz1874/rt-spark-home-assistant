@@ -4,6 +4,7 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/packages/aht10-latest" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/packages/ap3216c-latest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/packages/cpu_usage-latest" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/packages/kawaii-mqtt-latest" vcs="Git" />
   </component>
 </project>
