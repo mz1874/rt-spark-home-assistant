@@ -20,4 +20,11 @@ extern void RGB_Reflash(void);
 extern void led_matrix_rst();
 
 void turn_on_led(RGBColor_TypeDef Color, char * state);
+
+
+void turn_on_blue_led();
+
+void turn_on_red_led();
+
+void turn_on_green_led();
 #endif

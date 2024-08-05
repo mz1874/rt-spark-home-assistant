@@ -1,4 +1,6 @@
+#include <string.h>
 #include "usart3.h"
+#include "drv_matrix_led.h"
 
 #define SAMPLE_UART_NAME       "uart3"
 
@@ -27,7 +29,24 @@ static void serial_thread_entry(void *parameter) {
         rt_kprintf("Received: %x\n", ch);
 
         /* 读取到的数据通过串口错位输出 */
+
+        if (ch == 1) {  // 对应 '\001'
+            turn_on_red_led();
+        } else if (ch == 2) {  // 对应 '\002'
+            // 蓝色
+            turn_on_blue_led();
+        } else if (ch == 3) {  // 对应 '\003'
+            // 绿色
+            turn_on_green_led();
+        } else if (ch == 4) {  // 对应 '\004'
+            led_matrix_rst();
+        } else if (ch == 5) {  // 对应 '\005'
+            // 开启水泵
+        } else if (ch == 6) {  // 对应 '\006'
+            // 关闭水泵
+        }
         ch = ch + 1;
+        
         rt_device_write(serial, 0, &ch, 1);
     }
 }
