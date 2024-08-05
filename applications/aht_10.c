@@ -38,28 +38,6 @@ rt_err_t write_reg(struct rt_i2c_bus_device *Device, rt_uint8_t reg, rt_uint8_t 
     msgs.buf = buf;         //消息的缓冲区：待发送/接收的数组
     msgs.len = buf_size;    //消息的缓冲区大小：待发送/接收的数组的大小
 
-    //传输信息
-    //这里i2c.core层提供给我们三个API去进行I2C的数据传递：
-    /*
-     * 1.发送API
-     * rt_size_t rt_i2c_master_send(struct rt_i2c_bus_device *bus,
-                             rt_uint16_t               addr,
-                             rt_uint16_t               flags,
-                             const rt_uint8_t         *buf,
-                             rt_uint32_t               count)
-
-       2.接收API
-       rt_size_t rt_i2c_master_recv(struct rt_i2c_bus_device *bus,
-                             rt_uint16_t               addr,
-                             rt_uint16_t               flags,
-                             rt_uint8_t               *buf,
-                             rt_uint32_t               count)
-       3.传输API
-       rt_size_t rt_i2c_transfer(struct rt_i2c_bus_device *bus,
-                          struct rt_i2c_msg         msgs[],
-                          rt_uint32_t               num)
-      * 实际上1跟2最后都会调用回3，大家可以按照自己需求进行调用
-    */
     if (rt_i2c_transfer(Device, &msgs, 1) == 1) {
         return RT_EOK;
     } else {
